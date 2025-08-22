@@ -18,14 +18,24 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Gradle
-        uses: gradle/gradle-build-action@v3
+      # Android SDK telepítése + licenc elfogadás
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug || gradle assembleDebug
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0" || true
+          yes | sdkmanager --licenses
+
+      # Gradle futtatása wrapper nélkül
+      - name: Build with Gradle (no wrapper)
+        uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: 8.10
+          arguments: assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: NettóBérKalkulátor-APK
+          name: NettoBerKalkulator-APK
           path: app/build/outputs/apk/debug/app-debug.apk
